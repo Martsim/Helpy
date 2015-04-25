@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 
 public class Main {
-	static ArrayList<Integer> requests;
+	static ArrayList<String> requests = new ArrayList<String>;
 	public static void add_req(String phonenr){
 		requests.add(phonenr);
 	}
