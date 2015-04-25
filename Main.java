@@ -14,13 +14,14 @@ public class Main {
 	public static void main(String[] args) {
 		add_req("55");//put the phonenr
 		while(true){
-			//get requests into the requests table
+			//TODO:get requests into the requests table
+			
 			//Deal with the requests
-			for (String pn: requests){//has to be changed to int i ..x...++. way to remove helped ones
+			for (String pn : requests){
 				User requester = get_helpreqdata(pn);
 				find_helper(requester);
-				//remove this request
-			}		
+			}
+			requests.clear(); //wipes the list clean
 		}
 	}
 	
