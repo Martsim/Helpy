@@ -82,7 +82,7 @@ public class Main {
 	private static ArrayList<User> getchosenOnes(User requester) {
 
 		ArrayList<User> chosenOnes = new ArrayList<User>();
-try{
+		try{
 			Connection con = DriverManager.getConnection("jdbc:mysql://localhost/helpy_db", "root", "");
 
 			Statement st = con.createStatement();
@@ -112,7 +112,9 @@ try{
 						name = "Didnt get";
 						phone = "0";
 					}
-					chosenOnes.add(new User(id, name, phone, Longitude, Longitude));
+					if (phone.equals(requester.getPhonenr()) != true ){
+						chosenOnes.add(new User(id, name, phone, Longitude, Longitude));
+					}
 				}
 			}
 			con.close();
