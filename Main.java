@@ -8,14 +8,15 @@ import java.util.ArrayList;
 
 public class Main {
 	static ArrayList<Integer> requests;
-	public static void add_req(int phonenr){
+	public static void add_req(String phonenr){
 		requests.add(phonenr);
 	}
 	public static void main(String[] args) {
-		requests.add(55);//put the phonenr
+		add_req("55");//put the phonenr
 		while(true){
-			//get request
-			for (int pn: requests){//has to be changed to int i ..x...++. way to remove helped ones
+			//get requests into the requests table
+			//Deal with the requests
+			for (String pn: requests){//has to be changed to int i ..x...++. way to remove helped ones
 				User requester = get_helpreqdata(pn);
 				find_helper(requester);
 				//remove this request
@@ -23,36 +24,49 @@ public class Main {
 		}
 	}
 	
-	private static User get_helpreqdata(int pn) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	private static User get_helpreqdata(String pn) {
 		
-		int req_phone = 0;
+		String req_phone = "0";
 		int id = 0;
 		String name = "";
 		float latitude = 0;
 		float longitude = 0;
 		
-		
-		//Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/helpy_db", "root", "");
-		
-		Statement st = con.createStatement();
-		String sql = ("SELECT * FROM user WHERE phonenr = " + Integer.toString(pn) + ";");
-		ResultSet rs = st.executeQuery(sql);
-		
-		if(rs.next()) { 
-			req_phone = rs.getInt("phonenumber");
-			id = rs.getInt("id");
-			name = rs.getString("name");
-			latitude = rs.getFloat("Latitude");
-			longitude = rs.getFloat("Longitude");
-			
-			con.close();
+		try{
+			Connection con = DriverManager.getConnection("jdbc:mysql://localhost/helpy_db", "root", ""); 
+
+			Statement st = con.createStatement();
+			String sql = ("SELECT * FROM user WHERE phonenr = " + pn + ";");
+			ResultSet rs = st.executeQuery(sql);
+
+			if(rs.next()) { 
+				try{
+					latitude = rs.getFloat("latitude");
+					longitude = rs.getFloat("longitude");
+				}
+				catch(SQLException e){
+					latitude = 0;
+					longitude = 0;
+				}
+				try{
+					req_phone = rs.getString("phonenr");
+					id = rs.getInt("id");
+					name = rs.getString("name");
+				} catch (SQLException e){
+					req_phone = "0";
+					id = 0;
+					name = "Didnt get";
+				}		
+				con.close();
+			}
+		} catch (SQLException e) {
+			System.out.println("Problem in the help requester part - " + e);
 		}
-		
-		return new User(id, name, req_phone, longitude, latitude);//the error case	
+
+		return new User(id, name, req_phone, longitude, latitude);//the error case		
 	}
 	
-	private static void find_helper(User requester) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	private static void find_helper(User requester) {
 		
 		//gets chosen people
 		ArrayList<User> users = getchosenOnes(requester);
@@ -64,31 +78,49 @@ public class Main {
 
 	}
 	
-	private static ArrayList<User> getchosenOnes(User requester) 
-			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	private static ArrayList<User> getchosenOnes(User requester) {
 
 		ArrayList<User> chosenOnes = new ArrayList<User>();
+try{
+			Connection con = DriverManager.getConnection("jdbc:mysql://localhost/helpy_db", "root", "");
 
-		//Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/helpy_db", "root", ""); //i think this should have the DB address
-
-		Statement st = con.createStatement();
-		String sql = ("SELECT * FROM user;");
-		ResultSet rs = st.executeQuery(sql);
-		while(rs.next()) { 
-			float Latitude = rs.getFloat("Latitude");
-			float Longitude = rs.getFloat("Longitude");
-			if(distFrom(requester.getLatitude(), requester.getLongitude(), Latitude, Longitude)<1000){
-				int phone = rs.getInt("phonenumber");
-				int id = rs.getInt("id");
-				String name = rs.getString("name");
-				chosenOnes.add(new User(id, name, phone, Longitude, Longitude));
+			Statement st = con.createStatement();
+			String sql = ("SELECT * FROM user;");
+			ResultSet rs = st.executeQuery(sql);
+			while(rs.next()) { 
+				float Latitude;
+				float Longitude;
+				try{
+					Latitude = rs.getFloat("latitude");
+					Longitude = rs.getFloat("longitude");
+				}
+				catch(SQLException e){
+					Latitude = 0;
+					Longitude = 0;
+				}
+				if(distFrom(requester.getLatitude(), requester.getLongitude(), Latitude, Longitude)<1000){
+					int id;
+					String name;
+					String phone;
+					try{
+						id = rs.getInt("id");
+						name = rs.getString("name");
+						phone = rs.getString("phonenr");
+					} catch (SQLException e){
+						id = 99;
+						name = "Didnt get";
+						phone = "0";
+					}
+					chosenOnes.add(new User(id, name, phone, Longitude, Longitude));
+				}
 			}
+			con.close();
+		} catch (SQLException e) {
+			System.out.println("Problem in the help requester part - " + e);
 		}
-		con.close();
 		return chosenOnes;
-	}
-	
+			}
+
 	
 //taken from http://stackoverflow.com/questions/837872/calculate-distance-in-meters-when-you-know-longitude-and-latitude-in-java
  public static float distFrom(float lat1, float lng1, float lat2, float lng2) {
@@ -112,9 +144,9 @@ class User{
 	private String name;
 	private float longitude;
 	private float latitude;
-	private int phonenr;
+	private String phonenr;
 
-	User(int id, String name, int phonenr ,float longitude, float latitude){
+	User(int id, String name, String phonenr ,float longitude, float latitude){
 		this.id = id;
 		this.name = name;
 		this.longitude = longitude;
@@ -130,31 +162,10 @@ class User{
 	public float getLatitude() {
 		return latitude;
 	}
+	public String getPhonenr() {
+		return phonenr;
+	}
 	public String toString(){
 		return "Name: "+ name + ", N: "+ Float.toString(latitude)+" , E: " + Float.toString(longitude);
 	}
-
 }
-
-//You can ignore this last part, it's and example of a request
-/*class somecode{
-	static void classmethod() throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException{
-		//first thoughts
-		Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/t", "", ""); //i think this should have the DB address
-
-		Statement st = con.createStatement();
-		String sql = ("SELECT * FROM requests;");
-		ResultSet rs = st.executeQuery(sql);
-		while(rs.next()) { 
-			int req_phone = rs.getInt("phonenumber");
-			Statement st2 = con.createStatement();
-			String sql2 = ("SELECT * FROM User WHERE phonenumber = "+Integer.toString(req_phone)+";");
-			ResultSet rs2 = st2.executeQuery(sql);
-			int id = rs.getInt("id");
-			double Latitude = rs.getDouble("Latitude");
-			double Longitude = rs.getDouble("Longitude");
-		}
-		con.close();
-	}
-}*/
