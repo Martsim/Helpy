@@ -35,7 +35,7 @@ class somecode{
 	static void classmethod() throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException{
 		//first thoughts
 		Class.forName("com.mysql.jdbc.Driver").newInstance();
-		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/t", "", "");
+		Connection con = DriverManager.getConnection("jdbc:mysql://localhost/t", "", ""); //i think this should have the DB address
 
 		Statement st = con.createStatement();
 		String sql = ("SELECT * FROM requests;");
