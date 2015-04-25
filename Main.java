@@ -12,7 +12,7 @@ public class Main {
 		requests.add(phonenr);
 	}
 	public static void main(String[] args) {
-		
+		requests.add(55);//put the phonenr
 		while(true){
 			//get request
 			for (int pn: requests){//has to be changed to int i ..x...++. way to remove helped ones
@@ -59,6 +59,7 @@ public class Main {
 		
 		for(User user: users){
 			//TODO: send message to this user part
+			System.out.println(user.getName() + " will be requested!");
 		}
 
 	}
@@ -119,6 +120,9 @@ class User{
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.phonenr = phonenr;
+	}
+	public String getName() {
+		return name;
 	}
 	public float getLongitude() {
 		return longitude;
